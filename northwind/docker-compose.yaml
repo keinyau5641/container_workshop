@@ -1,0 +1,28 @@
+version: '3'
+services: 
+  app:
+    build: ./server
+    #image: myapp
+    ports:
+      - "3002:3000"
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=changeit
+      - DB_HOST=db
+    networks: 
+      - mynet
+    depends_on:
+      - db
+
+  db:
+    image: stackupiss/northwind-db:v1
+    volumes:
+      - myvol2:/var/lib/mysql
+    networks: 
+      - mynet
+
+networks:
+  mynet:
+
+volumes: 
+  myvol2:
