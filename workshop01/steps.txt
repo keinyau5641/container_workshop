@@ -1,0 +1,8 @@
+1.docker build -t myapp .										[build myapp]
+2.docker network create mynet 										[create network]
+3.docker network ls 	        									[check if network created successfully]
+4.docker volume create myvol										[create volume]
+3.docker run -d -v myvol:/var/lib/mysql --network=mynet --name=mydb stakupiss/northwind-db:v1 		[run mydb with mounted volume]
+4.docker inspect network 										[check if mydb attached to mynet]
+5.docker run -d -e DB_USER=root -e DB_PASSWORD=changeit -p 3000:3000 --network=mynet --name=myapp myapp [run myapp with defined port and environment variables]
+6.winpty docker exec -it mydb bash 									[check the container]
