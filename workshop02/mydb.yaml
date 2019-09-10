@@ -1,0 +1,57 @@
+---
+kind: Namespace
+apiVersion: v1
+
+metadata:
+    name: myns
+    labels:
+        app: myapp
+---
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+    name: mydb-deploy
+    namespace: myns
+    labels:
+        app: mydb-dploy
+
+
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: mydb-pod
+    template:
+      metadata:
+          name: mydb-pod
+          labels:
+              app: mydb-pod
+              version: v1
+      spec:
+        containers:
+        - name: mydb
+          image: stackupiss/northwind-db:v1
+          imagePullPolicy: Always
+          ports:
+          - name: mysql-port
+            containerPort: 3306
+---
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: mydb-svc
+  namespace: myns
+  labels:
+    app: mydb-svc
+
+spec:
+  type: ClusterIP
+  selector:
+    app: mydb-pod
+  ports:
+  - name: mydb-svc-ports
+    port: 3306
+    targetPort: mysql-port
+
