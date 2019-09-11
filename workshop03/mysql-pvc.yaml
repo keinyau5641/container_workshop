@@ -1,0 +1,19 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+
+metadata: 
+  name: mydb-pvc
+  namespace: myns
+  labels:
+    name: mydb-pvc
+  annotations: 
+    volume.beta.kubernetes.io/storage-provisioner: dobs.csi.digitalocean.com
+
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: do-block-storage

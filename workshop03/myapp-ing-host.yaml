@@ -1,0 +1,29 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+
+metadata:
+    name: myapp-ing
+    namespace: myns
+    labels:
+        name: myapp-ing
+    annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+spec:
+    rules:
+    - host: myapp.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: myapp-svc
+            servicePort: 80
+
+    - host: fortune.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: fortune-svc
+            servicePort: 3000
