@@ -1,0 +1,83 @@
+---
+kind: Secret
+apiVersion: v1
+metadata: 
+  name: wx-app-secret
+  namespace: myns
+  labels:
+    app: wx-app-secret
+
+data:
+  app_id: N2VjMjM1NDZkOGM2YWZjOGViMDNjN2FmOGQ5YTE3MzE=
+
+---
+kind: Namespace
+apiVersion: v1
+
+metadata:
+    name: myns
+    labels:
+        app: wx-app
+---
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+    name: wx-app-deploy
+    namespace: myns
+    labels:
+        app: wx-app-deploy
+
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: wx-app-pod
+    template:
+      metadata:
+          name: wx-app-pod
+          labels:
+              app: wx-app-pod
+              version: v1
+      spec:
+        containers:
+        - name: wx-app
+          image: stackupiss/weather:v1
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              cpu: 100m
+          env:
+          - name: APP_ID 
+            valueFrom:
+              secretKeyRef:
+                name: wx-app-secret
+                key: app_id
+          ports:
+          - name: wx-app-port
+            containerPort: 3000
+
+---
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: wx-app-svc
+  namespace: myns
+  labels:
+    app: wx-app-svc
+
+spec:
+  type: ClusterIP
+  selector:
+    app: wx-app-pod
+  ports:
+  - name: wx-app-svc-ports
+    port: 3000
+    targetPort: wx-app-port
+
+
+
+

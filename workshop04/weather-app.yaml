@@ -1,0 +1,117 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: weatherns
+  labels:
+    app: weather-app
+
+---
+kind: Secret
+apiVersion: v1
+
+metadata:
+    name: weather-secret
+    namespace: weatherns
+    labels:
+        app: weather-app
+
+data:
+    app_id: N2VjMjM1NDZkOGM2YWZjOGViMDNjN2FmOGQ5YTE3MzE=
+
+---
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+    name: weather-deploy
+    namespace: weatherns
+    labels:
+        app: weather-app
+
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            name: weather-pod
+    template:
+        metadata:
+            name: weather-pod
+            labels:
+                app: weather-app
+                name: weather-pod
+        spec:
+            containers:
+            - name: weather
+              image: stackupiss/weather:v1
+              imagePullPolicy: Always
+              env:
+              - name: APP_ID
+                valueFrom:
+                    secretKeyRef:
+                        name: weather-secret
+                        key: app_id
+              ports:
+              - name: weather-port
+                containerPort: 3000
+              readinessProbe:
+                httpGet:
+                    path: /ready
+                    port: weather-port
+                periodSeconds: 60
+              livenessProbe:
+                httpGet:
+                    path: /health
+                    port: weather-port
+                periodSeconds: 60
+              resources:
+                requests:
+                    cpu: 100m
+                    memory: 32M
+                limits:
+                    memory: 128M
+#                    cpu: 150m
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 1
+
+---
+kind: Service
+apiVersion: v1
+
+metadata:
+    name: weather-svc
+    namespace: weatherns
+    labels:
+        app: weather-app
+
+spec:
+    type: ClusterIP
+    selector:
+        name: weather-pod
+    ports:
+    - name: weather-svc-port 
+      port: 3000
+      targetPort: weather-port
+
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+
+metadata:
+    name: weather-ing
+    namespace: weatherns
+    labels:
+        app: weather-app
+
+spec:
+    rules:
+    - host: dockerbox3.keinyau2.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: weather-svc
+            servicePort: 3000
